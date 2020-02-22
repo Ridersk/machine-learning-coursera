@@ -61,26 +61,44 @@ Theta2_grad = zeros(size(Theta2));
 %               the regularization separately and then add them to Theta1_grad
 %               and Theta2_grad from Part 2.
 %
+y_matrix = zeros(m, num_labels);
 
+% set 1 in correspondent indices of labels of y
+for i = 1:m,
+  y_matrix(i, y(i)) = 1;
+endfor
 
+z_hidden = [ones(m, 1), X] * Theta1';
+hidden_l = sigmoid(z_hidden);
+z_out = [ones(m, 1), hidden_l] * Theta2';
+out_l = sigmoid(z_out);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+J = 1/m * ((-y_matrix .* log(out_l)) - ((1 .- y_matrix) .* log(1 .- out_l)));
+J = sum(sum(J, 2));
 
 % -------------------------------------------------------------
+# Gradient. h2: output layer
+out_err = zeros(m, num_labels);
+hidden_err = zeros(m, hidden_layer_size + 1);
+
+for i = 1:m,
+  out_err(i, :) = out_l(i, :) .- y_matrix(i, :);
+  
+  z_hidden_example = [1, X(i, :)] * Theta1';
+
+  hidden_err(i, :) = Theta2' * out_err(i, :)' .* sigmoidGradient(z_hidden_example);
+endfor
+
+hidden_err
+pause
+
+
+# Regularization
+r_theta1 = sum(sum(Theta1(:, 2:end) .^2, 2));
+r_theta2 = sum(sum(Theta2(:, 2:end) .^2, 2));
+regularization = lambda/(2 * m) * (r_theta1 + r_theta2);
+
+J = J + regularization;
 
 % =========================================================================
 
