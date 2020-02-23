@@ -61,36 +61,43 @@ Theta2_grad = zeros(size(Theta2));
 %               the regularization separately and then add them to Theta1_grad
 %               and Theta2_grad from Part 2.
 %
-y_matrix = zeros(m, num_labels);
+j = zeros(m, 1);
 
-% set 1 in correspondent indices of labels of y
-for i = 1:m,
-  y_matrix(i, y(i)) = 1;
-endfor
-
-z_hidden = [ones(m, 1), X] * Theta1';
-hidden_l = sigmoid(z_hidden);
-z_out = [ones(m, 1), hidden_l] * Theta2';
-out_l = sigmoid(z_out);
-
-J = 1/m * ((-y_matrix .* log(out_l)) - ((1 .- y_matrix) .* log(1 .- out_l)));
-J = sum(sum(J, 2));
-
-% -------------------------------------------------------------
-# Gradient. h2: output layer
-out_err = zeros(m, num_labels);
-hidden_err = zeros(m, hidden_layer_size + 1);
+% Acumulate Gradient
+D_Theta1 = zeros(size(Theta1));
+D_Theta2 = zeros(size(Theta2));
 
 for i = 1:m,
-  out_err(i, :) = out_l(i, :) .- y_matrix(i, :);
+  % set 1 in correspondent indices of labels of y
+  y_example = zeros(num_labels, 1);
+  y_example(y(i)) = 1;
+
+  z_hidden = [1, X(i, :)] * Theta1';
+  hidden_l = sigmoid(z_hidden);
+  z_out = [1 , hidden_l] * Theta2';
+  out_l = sigmoid(z_out)';
   
-  z_hidden_example = [1, X(i, :)] * Theta1';
+  j(i) = 1/m * sum((-y_example .* log(out_l)) - ((1 .- y_example) .* log(1 .- out_l)));
+  
+  % Errors
+  out_err = zeros(num_labels, 1);
+  hidden_err = zeros(hidden_layer_size + 1, 1);
+  
+  out_err = out_l .- y_example;
+  hidden_err = Theta2' * out_err;
 
-  hidden_err(i, :) = Theta2' * out_err(i, :)' .* sigmoidGradient(z_hidden_example);
+  % Gradient Acumulate
+  D_Theta1(:, 2:end) = D_Theta1(:, 2:end) + hidden_err(2:end) * X(i, :);
+  
+  D_Theta2(:, 2:end) = D_Theta2(:, 2:end) + out_err * hidden_l;
 endfor
 
-hidden_err
-pause
+Theta1_grad = D_Theta1 / m;
+Theta2_grad = D_Theta2 / m;
+  
+% -------------------------------------------------------------
+# J Total
+J = sum(j);
 
 
 # Regularization
@@ -104,6 +111,5 @@ J = J + regularization;
 
 % Unroll gradients
 grad = [Theta1_grad(:) ; Theta2_grad(:)];
-
 
 end
