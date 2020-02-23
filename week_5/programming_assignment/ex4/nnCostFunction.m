@@ -71,25 +71,22 @@ for i = 1:m,
   % set 1 in correspondent indices of labels of y
   y_example = zeros(num_labels, 1);
   y_example(y(i)) = 1;
-
-  z_hidden = [1, X(i, :)] * Theta1';
-  hidden_l = sigmoid(z_hidden);
-  z_out = [1 , hidden_l] * Theta2';
-  out_l = sigmoid(z_out)';
   
-  j(i) = 1/m * sum((-y_example .* log(out_l)) - ((1 .- y_example) .* log(1 .- out_l)));
+  input_layer = [1, X(i, :)];
+  z_hidden = input_layer * Theta1';
+  hidden_layer = [1, sigmoid(z_hidden)];
+  z_out = hidden_layer * Theta2';
+  out_layer = sigmoid(z_out)';
+  
+  j(i) = 1/m * sum((-y_example .* log(out_layer)) - ((1 .- y_example) .* log(1 .- out_layer)));
   
   % Errors
-  out_err = zeros(num_labels, 1);
-  hidden_err = zeros(hidden_layer_size + 1, 1);
-  
-  out_err = out_l .- y_example;
-  hidden_err = Theta2' * out_err;
+  out_err = out_layer .- y_example;
+  hidden_err = Theta2' * out_err .* [0; sigmoidGradient(z_hidden)'];
 
   % Gradient Acumulate
-  D_Theta1(:, 2:end) = D_Theta1(:, 2:end) + hidden_err(2:end) * X(i, :);
-  
-  D_Theta2(:, 2:end) = D_Theta2(:, 2:end) + out_err * hidden_l;
+  D_Theta1 = D_Theta1 + hidden_err(2:end) * input_layer;
+  D_Theta2 = D_Theta2 + out_err * hidden_layer;
 endfor
 
 Theta1_grad = D_Theta1 / m;
