@@ -104,6 +104,10 @@ regularization = lambda/(2 * m) * (r_theta1 + r_theta2);
 
 J = J + regularization;
 
+% Regularization for gradient
+Theta1_grad(:, 2:end) = Theta1_grad(:, 2:end) + lambda/m * Theta1(:, 2:end);
+Theta2_grad(:, 2:end) = Theta2_grad(:, 2:end) + lambda/m * Theta2(:, 2:end);
+
 % =========================================================================
 
 % Unroll gradients
